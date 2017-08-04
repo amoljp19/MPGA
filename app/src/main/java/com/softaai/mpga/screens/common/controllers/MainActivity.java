@@ -1,17 +1,22 @@
 package com.softaai.mpga.screens.common.controllers;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+//import android.app.Fragment;
+//import android.app.FragmentTransaction;
 import android.os.Bundle;
 
 //import com.techyourchance.www.android_mvc_tutorial.R;
 import com.softaai.mpga.screens.smsall.controllers.SmsAllAllFragment;
 import com.softaai.mpga.screens.common.mvcviews.RootViewMvcImpl;
 import com.softaai.mpga.*;
+import android.support.v7.app.*;
+import android.support.v4.app.*;
 
 
-public class MainActivity extends Activity implements BaseFragment.AbstractFragmentCallback {
+public class MainActivity extends AppCompatActivity implements BaseFragment.AbstractFragmentCallback
+{
+
+
 
     RootViewMvcImpl mViewMVC;
 
@@ -48,10 +53,10 @@ public class MainActivity extends Activity implements BaseFragment.AbstractFragm
     // Fragments management
 
     @Override
-    public void replaceFragment(Class<? extends Fragment> claz, boolean addToBackStack,
+    public void replaceFragment(Class<? extends android.support.v4.app.Fragment> claz, boolean addToBackStack,
                                 Bundle args) {
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
 
         Fragment newFragment;

@@ -1,12 +1,13 @@
 package com.softaai.mpga.screens.common.controllers;
 
 import android.app.Activity;
-import android.app.Fragment;
+//import android.app.Fragment;
 import android.os.Bundle;
 
 import com.softaai.mpga.MpgaApplication;
 import com.softaai.mpga.common.BackgroundThreadPoster;
 import com.softaai.mpga.common.MainThreadPoster;
+import android.support.v4.app.*;
 
 /**
  * This abstract class contains convenience logic which is common to all fragments in the app.
