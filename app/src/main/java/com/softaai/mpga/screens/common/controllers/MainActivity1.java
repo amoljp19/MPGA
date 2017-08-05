@@ -1,36 +1,38 @@
 package com.softaai.mpga.screens.common.controllers;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
+import android.app.*;
+import android.os.*;
+import android.support.annotation.*;
+import android.support.design.widget.*;
+import android.support.v4.app.*;
+import android.support.v4.view.*;
+import android.support.v4.widget.*;
+import android.support.v7.app.*;
+import android.support.v7.widget.*;
+import android.view.*;
+import android.widget.*;
+import com.softaai.mpga.*;
+import com.softaai.mpga.adapter.*;
+import com.softaai.mpga.model.*;
+import com.softaai.mpga.retrofit.api.*;
+import com.softaai.mpga.screens.common.controllers.*;
+import com.softaai.mpga.utils.*;
+import java.util.*;
+import retrofit2.*;
+
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-
-import java.util.*;
-import com.softaai.mpga.*;
 
 public class MainActivity1 extends AppCompatActivity
 {
 	private DrawerLayout mDrawerLayout;
+	
+	private ListView listView;
+    private View parentView;
+
+    private ArrayList<Contact> contactList;
+    private MyContactAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,18 @@ public class MainActivity1 extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		
+		/**
+         * Array List for Binding Data from JSON to this List
+         */
+        contactList = new ArrayList<>();
+
+        parentView = findViewById(R.id.coordinator);
+
+        /**
+         * Getting List and Setting List Adapter
+         */
+        listView = (ListView) findViewById(R.id.listView);
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
 		navigationView.setVisibility(View.VISIBLE);
@@ -61,14 +75,66 @@ public class MainActivity1 extends AppCompatActivity
 		fab.setVisibility(View.VISIBLE);
         fab.setOnClickListener(new View.OnClickListener() {
 				@Override
-				public void onClick(View v) {
-					Snackbar.make(findViewById(R.id.coordinator), "I'm a Snackbar", Snackbar.LENGTH_LONG).setAction("Action", new View.OnClickListener() {
-							@Override
-							public void onClick(View v) {
-								Toast.makeText(MainActivity1.this, "Snackbar Action", Toast.LENGTH_LONG).show();
-							}
-						}).show();
+				public void onClick(final View parentView) {
+
+					/**
+					 * Checking Internet Connection
+					 */
+					if (InternetConnection.checkConnection(getApplicationContext())) {
+						final ProgressDialog dialog;
+						/**
+						 * Progress Dialog for User Interaction
+						 */
+						dialog = new ProgressDialog(MainActivity1.this);
+						dialog.setTitle(getString(R.string.string_getting_json_title));
+						dialog.setMessage(getString(R.string.string_getting_json_message));
+						dialog.show();
+
+						//Creating an object of our api interface
+						ApiService api = RetroClient.getApiService();
+
+						/**
+						 * Calling JSON
+						 */
+						Call<ContactList> call = api.getMyJSON();
+
+						/**
+						 * Enqueue Callback will be call when get response...
+						 */
+						call.enqueue(new Callback<ContactList>() {
+								@Override
+								public void onResponse(Call<ContactList> call, Response<ContactList> response) {
+									//Dismiss Dialog
+									dialog.dismiss();
+
+									if(response.isSuccessful()) {
+										/**
+										 * Got Successfully
+										 */
+										contactList = response.body().getContacts();
+
+										/**
+										 * Binding that List to Adapter
+										 */
+										adapter = new MyContactAdapter(MainActivity1.this, contactList);
+										listView.setAdapter(adapter);
+
+									} else {
+										Snackbar.make(parentView, R.string.string_some_thing_wrong, Snackbar.LENGTH_LONG).show();
+									}
+								}
+
+								@Override
+								public void onFailure(Call<ContactList> call, Throwable t) {
+									dialog.dismiss();
+								}
+							});
+
+					} else {
+						Snackbar.make(parentView, R.string.string_internet_connection_not_available, Snackbar.LENGTH_LONG).show();
+					}
 				}
+				
 			});
 
         DesignDemoPagerAdapter adapter = new DesignDemoPagerAdapter(getSupportFragmentManager());
